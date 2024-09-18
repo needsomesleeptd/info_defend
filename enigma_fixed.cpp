@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include <fstream>
+#include <cstring>
 using namespace std;
 
 void printBinary(char c)
@@ -266,9 +267,9 @@ public:
             std::cerr << "Error creating file: " << output_file_path << std::endl;
             return;
         }
-
-        char buffer[51]; // 50 bytes + 1 for the null terminator
-        while (input_file.read(buffer, 50) && input_file.gcount() > 0)
+        int batch_size = 40
+        char buffer[batch_size + 1]; // 50 bytes + 1 for the null terminator
+        while (input_file.read(buffer, batch_size) && input_file.gcount() > 0)
         {
             // Get the number of bytes read
             size_t bytes_read = input_file.gcount();
@@ -281,6 +282,20 @@ public:
 
             // Write the encrypted chunk to the output file
             output_file << encrypted_chunk;
+            buffer[0] = 0;
+        }
+
+        if (strlen(buffer) > 0)
+        {
+            size_t bytes_read = input_file.gcount();
+
+            std::string chunk(buffer, bytes_read);
+
+            // Decrypt the chunk
+            std::string decrypted_chunk = decrypt(chunk);
+
+            // Write the decrypted chunk to the output file
+            output_file << decrypted_chunk;
         }
 
         input_file.close();
@@ -308,9 +323,9 @@ public:
             std::cerr << "Error creating file: " << outputFilePath << std::endl;
             return;
         }
-
-        char buffer[51];
-        while (input_file.read(buffer, 50) && input_file.gcount() > 0)
+        int batch_size = 40;
+        char buffer[batch_size + 1];
+        while (input_file.read(buffer,batch_size) && input_file.gcount() > 0)
         {
             // Get the number of bytes read
             size_t bytes_read = input_file.gcount();
@@ -323,7 +338,20 @@ public:
 
             // Write the decrypted chunk to the output file
             output_file << decrypted_chunk;
+            buffer[0] = 0;
         }
+        if (strlen(buffer) > 0)
+        {
+            size_t bytes_read = input_file.gcount();
+            std::string chunk(buffer, bytes_read);
+
+            // Decrypt the chunk
+            std::string decrypted_chunk = decrypt(chunk);
+
+            // Write the decrypted chunk to the output file
+            output_file << decrypted_chunk;
+        }
+
 
         input_file.close();
         output_file.close();
@@ -361,7 +389,7 @@ int main()
     cout << "Ciphertext: " << ciphertext << endl;
     string decryptedText = enigma2.decrypt(ciphertext);
     cout << "Decrypted Text: " << decryptedText << endl;
-    enigma1.encrypt_file("/home/andrew/uni/info_defend/docs.zip");
-    enigma2.decrypt_file("/home/andrew/uni/info_defend/docs.zip.enigma");
+    enigma1.encrypt_file("image.zip");
+    enigma2.decrypt_file("image.zip.enigma");
     return 0;
 }
