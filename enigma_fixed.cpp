@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <algorithm>
-
+#include <fstream>
 using namespace std;
 
 void printBinary(char c)
@@ -205,9 +205,9 @@ public:
         for (int i = 0; i < rotors.size(); ++i)
         {
             if (turns_count % rotors_mod == 0)
-                {
-                    rotors[i].rotate();
-                }
+            {
+                rotors[i].rotate();
+            }
             rotors_mod *= rotors.size();
         }
     }
@@ -225,7 +225,7 @@ public:
             rotate_rotors();
             char encrypted_high_half = encrypt_char(high_half);
             rotate_rotors();
-            encryptedText += encrypted_lower_half;      
+            encryptedText += encrypted_lower_half;
             encryptedText += encrypted_high_half;
         }
         return encryptedText;
@@ -246,6 +246,88 @@ public:
             decryptedText += result;
         }
         return decryptedText;
+    }
+
+    void encrypt_file(const std::string &file_path)
+    {
+        // Open the input file
+        std::ifstream input_file(file_path);
+        if (!input_file.is_open())
+        {
+            std::cerr << "Error opening file: " << file_path << std::endl;
+            return;
+        }
+
+        // Create the output file
+        std::string output_file_path = file_path + ".enigma";
+        std::ofstream output_file(output_file_path, std::ios::trunc);
+        if (!output_file.is_open())
+        {
+            std::cerr << "Error creating file: " << output_file_path << std::endl;
+            return;
+        }
+
+        char buffer[51]; // 50 bytes + 1 for the null terminator
+        while (input_file.read(buffer, 50) && input_file.gcount() > 0)
+        {
+            // Get the number of bytes read
+            size_t bytes_read = input_file.gcount();
+
+            // Create a string from the read bytes
+            std::string chunk(buffer, bytes_read);
+
+            // Encrypt the chunk
+            std::string encrypted_chunk = encrypt(chunk);
+
+            // Write the encrypted chunk to the output file
+            output_file << encrypted_chunk;
+        }
+
+        input_file.close();
+        output_file.close();
+        std::cout << "File successfully encrypted and saved to: " << output_file_path << std::endl;
+    }
+
+    void decrypt_file(const std::string &file_path)
+    {
+        // Open the input file
+        std::ifstream input_file(file_path);
+        if (!input_file.is_open())
+        {
+            std::cerr << "Error opening file: " << file_path << std::endl;
+            return;
+        }
+
+        // Create the output file
+        size_t lastDotPos = file_path.find_last_of('.');
+        string baseName = file_path.substr(0, lastDotPos);
+        string outputFilePath = baseName + "_decrypted" + file_path.substr(lastDotPos);
+        std::ofstream output_file(outputFilePath, std::ios::trunc);
+        if (!output_file.is_open())
+        {
+            std::cerr << "Error creating file: " << outputFilePath << std::endl;
+            return;
+        }
+
+        char buffer[51];
+        while (input_file.read(buffer, 50) && input_file.gcount() > 0)
+        {
+            // Get the number of bytes read
+            size_t bytes_read = input_file.gcount();
+
+            // Create a string from the read bytes
+            std::string chunk(buffer, bytes_read);
+
+            // Decrypt the chunk
+            std::string decrypted_chunk = decrypt(chunk);
+
+            // Write the decrypted chunk to the output file
+            output_file << decrypted_chunk;
+        }
+
+        input_file.close();
+        output_file.close();
+        std::cout << "File successfully decrypted and saved to: " << outputFilePath << std::endl;
     }
 };
 
@@ -271,7 +353,7 @@ int main()
 
     // Create an Enigma machine instance
     EnigmaMachine enigma1(rotors1, reflector, plugboard);
-    EnigmaMachine enigma2(rotors1,reflector,plugboard);
+    EnigmaMachine enigma2(rotors1, reflector, plugboard);
     // Example encryption and decryption
     string plaintext = "i need some sleep";
     string ciphertext = enigma1.encrypt(plaintext);
@@ -279,6 +361,7 @@ int main()
     cout << "Ciphertext: " << ciphertext << endl;
     string decryptedText = enigma2.decrypt(ciphertext);
     cout << "Decrypted Text: " << decryptedText << endl;
-
+    enigma1.encrypt_file("/home/andrew/uni/info_defend/docs.zip");
+    enigma2.decrypt_file("/home/andrew/uni/info_defend/docs.zip.enigma");
     return 0;
 }
