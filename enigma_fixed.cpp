@@ -120,12 +120,18 @@ public:
 
 class EnigmaMachine
 {
-public:
+private:
+    int turns_count = 0;
+    int batch_file;
     vector<Rotor> rotors;
     Reflector reflector;
     Plugboard plugboard;
-    int turns_count = 0;
-    EnigmaMachine(vector<Rotor> rotors, Reflector reflector, Plugboard plugboard) : rotors(rotors), reflector(reflector), plugboard(plugboard) {}
+
+public:
+    EnigmaMachine(vector<Rotor> rotors, Reflector reflector, Plugboard plugboard, int batch_file = 40) : rotors(rotors), reflector(reflector), plugboard(plugboard)
+    {
+        batch_file = batch_file;
+    }
 
     pair<char, char> split_byte(char byte)
     {
@@ -252,7 +258,7 @@ public:
     void encrypt_file(const std::string &file_path)
     {
         // Open the input file
-        std::ifstream input_file(file_path);
+        std::ifstream input_file(file_path, std::ios::binary);
         if (!input_file.is_open())
         {
             std::cerr << "Error opening file: " << file_path << std::endl;
@@ -261,41 +267,27 @@ public:
 
         // Create the output file
         std::string output_file_path = file_path + ".enigma";
-        std::ofstream output_file(output_file_path, std::ios::trunc);
+        std::ofstream output_file(output_file_path, std::ios::binary | std::ios::trunc);
         if (!output_file.is_open())
         {
             std::cerr << "Error creating file: " << output_file_path << std::endl;
             return;
         }
-        int batch_size = 40
-        char buffer[batch_size + 1]; // 50 bytes + 1 for the null terminator
-        while (input_file.read(buffer, batch_size) && input_file.gcount() > 0)
-        {
-            // Get the number of bytes read
-            size_t bytes_read = input_file.gcount();
 
-            // Create a string from the read bytes
+        // Use a reasonable batch size for reading
+        const int batch_size = 4096; // 4KB
+        char buffer[batch_size];
+
+        while (input_file.read(buffer, batch_size) || input_file.gcount() > 0)
+        {
+            size_t bytes_read = input_file.gcount();
             std::string chunk(buffer, bytes_read);
 
             // Encrypt the chunk
-            std::string encrypted_chunk = encrypt(chunk);
+            std::string encrypted_chunk = encrypt(chunk); // Assuming you have an `encrypt` function
 
             // Write the encrypted chunk to the output file
-            output_file << encrypted_chunk;
-            buffer[0] = 0;
-        }
-
-        if (strlen(buffer) > 0)
-        {
-            size_t bytes_read = input_file.gcount();
-
-            std::string chunk(buffer, bytes_read);
-
-            // Decrypt the chunk
-            std::string decrypted_chunk = decrypt(chunk);
-
-            // Write the decrypted chunk to the output file
-            output_file << decrypted_chunk;
+            output_file.write(encrypted_chunk.data(), encrypted_chunk.size());
         }
 
         input_file.close();
@@ -306,7 +298,7 @@ public:
     void decrypt_file(const std::string &file_path)
     {
         // Open the input file
-        std::ifstream input_file(file_path);
+        std::ifstream input_file(file_path, std::ios::binary);
         if (!input_file.is_open())
         {
             std::cerr << "Error opening file: " << file_path << std::endl;
@@ -315,43 +307,29 @@ public:
 
         // Create the output file
         size_t lastDotPos = file_path.find_last_of('.');
-        string baseName = file_path.substr(0, lastDotPos);
-        string outputFilePath = baseName + "_decrypted" + file_path.substr(lastDotPos);
-        std::ofstream output_file(outputFilePath, std::ios::trunc);
+        std::string baseName = file_path.substr(0, lastDotPos);
+        std::string outputFilePath = baseName + "_decrypted" + file_path.substr(lastDotPos);
+        std::ofstream output_file(outputFilePath, std::ios::binary | std::ios::trunc);
         if (!output_file.is_open())
         {
             std::cerr << "Error creating file: " << outputFilePath << std::endl;
             return;
         }
-        int batch_size = 40;
-        char buffer[batch_size + 1];
-        while (input_file.read(buffer,batch_size) && input_file.gcount() > 0)
-        {
-            // Get the number of bytes read
-            size_t bytes_read = input_file.gcount();
 
-            // Create a string from the read bytes
-            std::string chunk(buffer, bytes_read);
+        const int batch_size = 4096; // 4KB
+        char buffer[batch_size];
 
-            // Decrypt the chunk
-            std::string decrypted_chunk = decrypt(chunk);
-
-            // Write the decrypted chunk to the output file
-            output_file << decrypted_chunk;
-            buffer[0] = 0;
-        }
-        if (strlen(buffer) > 0)
+        while (input_file.read(buffer, batch_size) || input_file.gcount() > 0)
         {
             size_t bytes_read = input_file.gcount();
             std::string chunk(buffer, bytes_read);
 
             // Decrypt the chunk
-            std::string decrypted_chunk = decrypt(chunk);
+            std::string decrypted_chunk = decrypt(chunk); // Assuming you have a `decrypt` function
 
             // Write the decrypted chunk to the output file
-            output_file << decrypted_chunk;
+            output_file.write(decrypted_chunk.data(), decrypted_chunk.size());
         }
-
 
         input_file.close();
         output_file.close();
@@ -389,7 +367,7 @@ int main()
     cout << "Ciphertext: " << ciphertext << endl;
     string decryptedText = enigma2.decrypt(ciphertext);
     cout << "Decrypted Text: " << decryptedText << endl;
-    enigma1.encrypt_file("image.zip");
-    enigma2.decrypt_file("image.zip.enigma");
+    enigma1.encrypt_file("bmstu-iu7-OS-main-linux (1).zip");
+    enigma2.decrypt_file("bmstu-iu7-OS-main-linux (1).zip.enigma");
     return 0;
 }
