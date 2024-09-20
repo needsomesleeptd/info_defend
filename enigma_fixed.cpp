@@ -33,7 +33,8 @@ public:
         }
         this->offset = offset;
     }
-    int get_alphabet_size(){
+    int get_alphabet_size()
+    {
         return alphabet_size;
     }
     void check()
@@ -90,13 +91,15 @@ class Reflector
 {
 private:
     vector<pair<char, char>> connection;
-    int alphabet_size; 
+    int alphabet_size;
+
 public:
     Reflector(vector<pair<char, char>> &wiring, int alphabet_size_src) : connection(wiring)
     {
-        alphabet_size=alphabet_size_src;
+        alphabet_size = alphabet_size_src;
     }
-    int get_alphabet_size() {
+    int get_alphabet_size()
+    {
         return alphabet_size;
     }
     void check()
@@ -114,7 +117,7 @@ public:
                 }
             }
             if (!found_num)
-                 throw runtime_error("invalid wiring refelctor, not all numbers are present no number:"+ to_string(i));
+                throw runtime_error("invalid wiring refelctor, not all numbers are present no number:" + to_string(i));
         }
     }
 
@@ -384,12 +387,14 @@ public:
         int alphabet_size = rotors[0].get_alphabet_size();
         for (auto &rotor : rotors)
         {
-            if  (rotor.get_alphabet_size() != alphabet_size) {
+            if (rotor.get_alphabet_size() != alphabet_size)
+            {
                 throw runtime_error("invalid rotor aphabet size,required one:" + to_string(alphabet_size));
             }
             rotor.check();
         }
-        if (alphabet_size != reflector.get_alphabet_size()) {
+        if (alphabet_size != reflector.get_alphabet_size())
+        {
             throw runtime_error("invalid reflector alpabet size,required one:" + to_string(alphabet_size));
         }
         reflector.check();
@@ -399,7 +404,7 @@ public:
 int main()
 {
     // Example usage: Define different rotor configurations
-    int alphabet_size= 16;
+    int alphabet_size = 16;
     vector<Rotor> rotors1 = {
         Rotor({4, 10, 12, 5, 11, 6, 3, 15, 7, 14, 1, 13, 0, 2, 8, 9}, 2), // Rotor I
         Rotor({0, 9, 3, 10, 15, 8, 14, 13, 12, 11, 2, 7, 1, 6, 4, 5}, 1), // Rotor II
@@ -409,27 +414,55 @@ int main()
     // Define reflector wiring (example)
     vector<pair<char, char>> reflector_wiring = {
         {0, 4}, {1, 9}, {2, 12}, {3, 15}, {4, 0}, {5, 11}, {6, 14}, {7, 13}, {8, 10}, {9, 1}, {10, 8}, {11, 5}, {12, 2}, {13, 7}, {14, 6}, {15, 3}};
-    Reflector reflector(reflector_wiring,alphabet_size);
+    Reflector reflector(reflector_wiring, alphabet_size);
 
     // Define plugboard connections (example)
     vector<pair<char, char>> plugboard_connections = {
         {0, 4}, {1, 9}, {2, 12}, {3, 15}, {4, 0}, {5, 11}, {6, 14}, {7, 13}, {8, 10}, {9, 1}, {10, 8}, {11, 5}, {12, 2}, {13, 7}, {14, 6}, {15, 3}};
 
     Plugboard plugboard(plugboard_connections); // Correct constructor
-    
+
     // Create an Enigma machine instance
     EnigmaMachine enigma1(rotors1, reflector, plugboard);
     EnigmaMachine enigma2(rotors1, reflector, plugboard);
     enigma1.check_self();
     enigma2.check_self();
-    // Example encryption and decryption
-    string plaintext = "i need some sleep";
-    string ciphertext = enigma1.encrypt(plaintext);
-    cout << "Text to encrypt:" << plaintext << endl;
-    cout << "Ciphertext: " << ciphertext << endl;
-    string decryptedText = enigma2.decrypt(ciphertext);
-    cout << "Decrypted Text: " << decryptedText << endl;
-    enigma1.encrypt_file("bmstu-iu7-OS-main-linux (1).zip");
-    enigma2.decrypt_file("bmstu-iu7-OS-main-linux (1).zip.enigma");
+
+    int option = -1;
+    while (option != 0)
+    {
+
+        string menu = "0. Exit\n"
+                      "1. Working with strings\n"
+                      "2. Working with archives\n"
+                      "3. Working with binary files\n";
+        cout << menu;
+
+        cin >> option;
+        if (option == 1)
+        {
+            string encode_string;
+            cout << "Enter a string to encode: ";
+            cin >> encode_string;
+            string encoded_string = enigma1.encrypt(encode_string);
+            cout << "Encoded string: " << encoded_string << endl;
+            string decoded_string = enigma2.decrypt(encoded_string);
+            cout << "Decoded string: " << decoded_string << endl;
+        }
+        else if (option == 2)
+        {
+            string filename;
+            cout << "Enter the filename to decode and encode: ";
+            cin >> filename;
+            enigma1.encrypt_file(filename);
+            enigma2.decrypt_file(filename + ".enigma");
+        } else if (option == 3) {
+             string filename;
+            cout << "Enter the filename to decode and encode: ";
+            cin >> filename;
+            enigma1.encrypt_file(filename);
+            enigma2.decrypt_file(filename + ".enigma");
+        }
+    }
     return 0;
 }
