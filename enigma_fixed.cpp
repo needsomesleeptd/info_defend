@@ -33,6 +33,27 @@ public:
         }
         this->offset = offset;
     }
+    int get_alphabet_size(){
+        return alphabet_size;
+    }
+    void check()
+    {
+        bool found_num = true;
+        for (int i = 0; i < alphabet_size; i++)
+        {
+            found_num = false;
+            for (int j = 0; j < alphabet_size; j++)
+            {
+                if (i == wiring[j])
+                {
+                    found_num = true;
+                    break;
+                }
+            }
+            if (!found_num)
+                throw runtime_error("invalid wiring rotor, not all numbers are present no number:" + to_string(i));
+        }
+    }
 
     char encrypt(char c)
     {
@@ -69,10 +90,32 @@ class Reflector
 {
 private:
     vector<pair<char, char>> connection;
-
+    int alphabet_size; 
 public:
-    Reflector(vector<pair<char, char>> &wiring) : connection(wiring)
+    Reflector(vector<pair<char, char>> &wiring, int alphabet_size_src) : connection(wiring)
     {
+        alphabet_size=alphabet_size_src;
+    }
+    int get_alphabet_size() {
+        return alphabet_size;
+    }
+    void check()
+    {
+        bool found_num = true;
+        for (int i = 0; i < alphabet_size; i++)
+        {
+            found_num = false;
+            for (int j = 0; j < connection.size(); j++)
+            {
+                if (i == connection[j].first or i == connection[j].second)
+                {
+                    found_num = true;
+                    break;
+                }
+            }
+            if (!found_num)
+                 throw runtime_error("invalid wiring refelctor, not all numbers are present no number:"+ to_string(i));
+        }
     }
 
     char reflect(char c)
@@ -335,11 +378,28 @@ public:
         output_file.close();
         std::cout << "File successfully decrypted and saved to: " << outputFilePath << std::endl;
     }
+
+    void check_self()
+    {
+        int alphabet_size = rotors[0].get_alphabet_size();
+        for (auto &rotor : rotors)
+        {
+            if  (rotor.get_alphabet_size() != alphabet_size) {
+                throw runtime_error("invalid rotor aphabet size,required one:" + to_string(alphabet_size));
+            }
+            rotor.check();
+        }
+        if (alphabet_size != reflector.get_alphabet_size()) {
+            throw runtime_error("invalid reflector alpabet size,required one:" + to_string(alphabet_size));
+        }
+        reflector.check();
+    }
 };
 
 int main()
 {
     // Example usage: Define different rotor configurations
+    int alphabet_size= 16;
     vector<Rotor> rotors1 = {
         Rotor({4, 10, 12, 5, 11, 6, 3, 15, 7, 14, 1, 13, 0, 2, 8, 9}, 2), // Rotor I
         Rotor({0, 9, 3, 10, 15, 8, 14, 13, 12, 11, 2, 7, 1, 6, 4, 5}, 1), // Rotor II
@@ -349,17 +409,19 @@ int main()
     // Define reflector wiring (example)
     vector<pair<char, char>> reflector_wiring = {
         {0, 4}, {1, 9}, {2, 12}, {3, 15}, {4, 0}, {5, 11}, {6, 14}, {7, 13}, {8, 10}, {9, 1}, {10, 8}, {11, 5}, {12, 2}, {13, 7}, {14, 6}, {15, 3}};
-    Reflector reflector(reflector_wiring);
+    Reflector reflector(reflector_wiring,alphabet_size);
 
     // Define plugboard connections (example)
     vector<pair<char, char>> plugboard_connections = {
         {0, 4}, {1, 9}, {2, 12}, {3, 15}, {4, 0}, {5, 11}, {6, 14}, {7, 13}, {8, 10}, {9, 1}, {10, 8}, {11, 5}, {12, 2}, {13, 7}, {14, 6}, {15, 3}};
 
     Plugboard plugboard(plugboard_connections); // Correct constructor
-
+    
     // Create an Enigma machine instance
     EnigmaMachine enigma1(rotors1, reflector, plugboard);
     EnigmaMachine enigma2(rotors1, reflector, plugboard);
+    enigma1.check_self();
+    enigma2.check_self();
     // Example encryption and decryption
     string plaintext = "i need some sleep";
     string ciphertext = enigma1.encrypt(plaintext);
