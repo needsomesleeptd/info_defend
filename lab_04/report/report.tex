@@ -1,0 +1,36 @@
+\documentclass{bmstu}
+
+\setlist[enumerate]{label=\arabic*)}
+\setlist[itemize]{label=---}
+
+\usepackage{dcolumn}
+\newcolumntype{d}[1]{D{.}{.}{#1}}
+
+\usepackage{csvsimple}
+\usepackage{threeparttable}
+\usepackage{multirow}
+
+\bibliography{biblio}
+
+\begin{document}
+	
+	\makereporttitle{Информатика и системы управления}
+	{Программное обеспечение ЭВМ и информационные технологии}
+	{лабораторной работе №4}
+	{Защита информации}
+	{Электронная цифровая подпись. Алгоритм RSA с хешированием SHA-1}
+	{9}
+	{Разин~А.~В./ИУ7-74Б}
+	{Чиж~И.~С.}
+	
+	\maketableofcontents
+	
+	\include{00-introduction}
+	\include{01-analysis}
+	\include{02-design}
+	\include{03-implementation}
+	\include{04-conclusion}
+	
+	\makebibliography
+	
+\end{document}

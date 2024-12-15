@@ -1,0 +1,49 @@
+\chapter{Технологический раздел}
+
+\section{Средства реализации}
+
+В качестве языка программирования, используемого при написании данной лабораторной работы, был выбран C++~\cite{cpp-lang}.
+
+\section{Реализация алгоритмов}
+
+В листингах~\ref{lst:RSA.h}~--~\ref{lst:MD5.cpp} представлены реализации разрабатываемых модулей.
+\includelistingpretty
+	{RSA.h}
+	{c++}
+	{Реализация класса алгоритма RSA (получение ключей)}
+	
+\includelistingpretty
+	{RSA.cpp}
+	{c++}
+	{Реализация класса алгоритма RSA}
+
+\includelistingpretty
+	{MD5.cpp}
+	{c++}
+	{Реализация алгоритма MD5}
+
+\clearpage
+
+\section{Тестирование}
+В таблице~\ref{tbl:functional_test} представлены функциональные тесты.
+\begin{table}[ht!]
+	\begin{center}
+		\captionsetup{justification=raggedright,singlelinecheck=off}
+		\caption{\label{tbl:functional_test} Функциональные тесты}
+		\begin{tabular}{|m{1em}|m{15em}|m{15em}|}
+			\hline
+			№ & Входные данные & Выходные данные \\ 
+			\hline
+			1 & 2 пустых файла & Signature is valid \\
+			\hline
+			2 & 2 одинаковых текстовых файла & Signature is valid \\
+			\hline
+			3 & 2 разных текстовых файла & Signature is invalid \\
+			\hline
+			4 & 2 одинаковых архива & Signature is valid \\
+			\hline
+			5 & 2 разных архива & Signature is invalid \\
+			\hline
+		\end{tabular}
+	\end{center}
+\end{table}
